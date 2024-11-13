@@ -8,10 +8,14 @@ import SwiftData
 import Foundation
 
 @Model
-class Item {
+class Item: Identifiable {
+    var id = UUID()  // Unique identifier for each Item
     var timestamp: Date
+    var desc: String
     
-    init(timestamp: Date = .now) {
+    init(timestamp: Date = .now, desc: String = "") {
         self.timestamp = timestamp
+        self.desc = desc
     }
 }
+
