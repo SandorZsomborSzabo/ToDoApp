@@ -9,23 +9,18 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    // Responsible for data manipulation (Insert, Update & Delete)
     @Environment(\.modelContext) var modelContext
-    
-    // Used for fetching data
     @Query var items: [Item]
     
-    // Controls the sheet visibility for entering the description
     @State private var isPresentingDescriptionPrompt = false
-    
-    // Stores the user's input for the description
     @State private var newItemDescription: String = ""
-    
+    @State private var selectedPriority: String = "⭐️"  // Default priority
+
     var body: some View {
         VStack {
             // Trigger insert action
             Button(action: {
-                isPresentingDescriptionPrompt = true  // Show the description input sheet
+                isPresentingDescriptionPrompt = true
             }, label: {
                 Text("Add Item")
             })
@@ -34,16 +29,17 @@ struct ContentView: View {
             List {
                 ForEach(items) { item in
                     VStack(alignment: .leading) {
-                        Text(item.timestamp.formatted())  // Display timestamp
-                        Text(item.desc)            // Display description
+                        Text(item.timestamp.formatted())
+                        Text("Description: \(item.desc)")
+                        Text("Priority: \(item.priority)") // Display priority
                     }
                 }
             }
         }
-        // Sheet for entering item description
+        // Sheet for entering item description and selecting priority
         .sheet(isPresented: $isPresentingDescriptionPrompt) {
             VStack {
-                Text("Enter Item Description")
+                Text("Enter a short overview of the task:")
                     .font(.headline)
                     .padding()
                 
@@ -51,10 +47,23 @@ struct ContentView: View {
                     .padding()
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                 
+                Text("Choose the priority of the task:")
+                    .font(.headline)
+                    .padding()
+                
+                // Picker for selecting priority as a dropdown
+                Picker("Select Priority", selection: $selectedPriority) {
+                    ForEach(Item.priorities, id: \.self) { priority in
+                        Text(priority).tag(priority)
+                    }
+                }
+                .padding()
+                
                 Button("Add") {
-                    addItem(desc: newItemDescription)  // Add item with user-provided description
-                    newItemDescription = ""                   // Clear the text field
-                    isPresentingDescriptionPrompt = false     // Dismiss the sheet
+                    addItem(description: newItemDescription, priority: selectedPriority)
+                    newItemDescription = ""
+                    selectedPriority = "Low"  // Reset to default priority
+                    isPresentingDescriptionPrompt = false
                 }
                 .padding()
             }
@@ -62,9 +71,9 @@ struct ContentView: View {
         }
     }
     
-    // Insert new data with description
-    func addItem(desc: String) {
-        let item = Item(desc: desc)  // Create Item with description
+    // Insert new data with description and priority
+    func addItem(description: String, priority: String) {
+        let item = Item(desc: description, priority: priority)
         modelContext.insert(item)
     }
 }
